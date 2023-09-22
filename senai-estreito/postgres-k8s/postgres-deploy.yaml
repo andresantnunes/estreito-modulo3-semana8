@@ -1,0 +1,30 @@
+apiVersion: apps/v1 # versão da api do Kubernetes
+kind: Deployment    # Tipo de arquivo/execução do recurso, Deployment
+metadata: # metadados
+  name: postgres # nome do recurso é postgres
+spec: # especificações do Deployment
+  replicas: 1 # numero de replicas que o serviço terá, numero de Pods
+  template: # template dos pods
+    metadata:
+      labels:
+        app: postgres # nome dos pods
+    spec: # especificação dos pods
+      containers:
+        - name: postgres
+          image: postgres:10.4 # imagem que irá para dentro do pod
+          imagePullPolicy: "IfNotPresent" # politica de execução da imagem, para o kind: Never ou IfNotPresent
+          ports:
+            - containerPort: 5432 # porta interna ao pod
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim # uso do volume criado no persistent.yaml
+  selector:
+    matchLabels:
+      app: postgres
